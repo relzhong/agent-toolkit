@@ -10,7 +10,10 @@
 {
   "sources": [
     {
-      "source": "relzhong/agent-toolkit@main:.rulesync/skills",
+      "source": "https://github.com/relzhong/agent-toolkit.git",
+      "transport": "git",
+      "ref": "main",
+      "path": ".rulesync/skills",
       "skills": ["*"],
       "rulesPath": ".rulesync/rules",
       "rules": [
@@ -34,6 +37,8 @@ rulesync generate --check
 ```
 
 已用 Rulesync 16.4.0 验证。`install` 将远程内容放入项目的 `.rulesync/{rules,skills}/.curated/`；`generate` 生成各工具的指令和技能。提交消费项目的 `rulesync.lock`，使后续安装使用锁定的提交；需要升级时运行 `rulesync install --update`，该命令会重新解析配置中的所有来源。CI 使用 `rulesync install --frozen`。
+
+工具箱来源使用 Git transport，通过已有 Git 凭据访问仓库，不依赖 GitHub Contents API 的逐文件下载配额。
 
 本包没有传递安装机制：消费项目需要明确声明上游 sources。这里列出完整的 engineering/productivity 集合，以保留上游技能之间的依赖。Paseo 流程还需要目标环境已安装 `paseo` skill、可用的 Paseo 工具，以及工作流使用的 profiles；本仓库不分发用户的 daemon、凭据或 profile 配置。
 
