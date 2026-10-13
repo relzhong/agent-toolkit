@@ -71,11 +71,13 @@ rulesync generate --check
 
 从旧项目迁移时：
 
-1. 添加来源并安装，确认选中的 skills、五条规则和协议 references 都已下载。
-2. 将共享内容从本地 overview 移出，保留项目业务和 tracker/domain 绑定。
-3. 移除已迁走的本地同名 skill 源目录，避免遮住 curated 版本。项目专属 skills 保留。
+1. 先比较并保留本地修改；将已迁走的本地同名 skill 源目录移出 Rulesync 输入树，避免遮住 curated 版本。项目专属 skills 保留，安装完成前保留现有生成副本。
+2. 添加来源并安装，确认 lockfile 和磁盘均包含 12 个共享 skills、五条规则和协议 references。
+3. 将共享内容从本地 overview 移出，保留项目业务和 tracker/domain 绑定。
 4. 旧 `docs/agents/delivery-*.md` 与 `final-acceptance-review.md` 保留为入口；保留原有章节锚点，指向共享协议对应章节，历史 tickets 无需重写。
 5. 生成并检查根文件正文、技能依赖和历史链接。消费项目若将 curated 输入纳入 Git，应一并提交新的规则和技能副本以及 lockfile，使新 checkout 中的协议入口可用。
+
+Rulesync 16.4.0 在本地同名覆盖存在时，可能只将未覆盖的技能记录到新来源的 lock 条目；移除覆盖后，普通安装仍可能报告已是最新。如果已经按这个顺序安装过，需要重新解析该来源并检查完整清单。`rulesync install --update` 可以重新解析，但会涉及所有来源；本次迁移只重建了 toolkit 的 lock 条目以保留上游锁定状态。
 
 历史交付记录描述当时锁定的协议与实现状态，升级工具箱不应重写既有验收结论。
 
