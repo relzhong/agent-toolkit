@@ -1,13 +1,43 @@
 # Agent Toolkit
 
-跨项目复用的 Agent 工作流、交付协议和 Rulesync 根级规则。源文件位于 `.rulesync/`；项目自己的业务规则、tracker 配置和实际交付文档留在项目内。
+可跨项目复用的 AI Agent 工作流与工程规则。从想法整理、方案设计到实现审查和交付归档，让不同项目使用一致的方法，同时保留各自的技术栈、业务约束和文档约定。
 
-## 安装到项目
+通过 [Rulesync](https://github.com/dyoshikawa/rulesync) 分发，当前配置覆盖 Codex CLI、Claude Code、Pi 和 OpenCode。
 
-在项目现有 `rulesync.jsonc` 中合并以下 sources，保留已有 targets 和其他配置。不要重复添加已有上游源。
+## 包含什么
+
+**12 个 skills**：11 个工作流技能，以及供它们共享的交付协议。
+
+| 用途 | Skills |
+| --- | --- |
+| 将想法、讨论或审查发现整理成计划 | `sketch-to-planning`、`conversation-to-planning`、`review-to-planning` |
+| 保存决策与调查依据 | `evidence-pack` |
+| 编写规格并拆分交付任务 | `to-prd`、`to-issues` |
+| 实现、审查与修复 | `review-loop`、`parallel-review` |
+| 使用 Paseo 编排工作 | `review-loop-paseo` |
+| 记录实现知识并归档计划 | `document-architecture-decision`、`mark-planning-implemented` |
+| 共享验收与证据规则 | `delivery-protocol` |
+
+**5 条根级规则**：作为项目指令的一部分加载。
+
+| 规则 | 作用 |
+| --- | --- |
+| `implementation-scope` | 保持实现范围，区分已批准要求与新增建议 |
+| `tool-output` | 控制工具输出量，保留退出码和必要验证证据 |
+| `task-artifacts` | 区分持久化文字记录与临时截图、日志等产物 |
+| `engineering-workflow` | 定义各阶段应使用的技能及完成条件 |
+| `rulesync-authoring` | 明确源文件、远程安装副本和生成文件的维护方式 |
+
+## 快速开始
+
+已使用 Rulesync 16.4.0 验证。安装本工具箱需要 Rulesync 和 Git；私有仓库访问使用现有 Git 凭据。
+
+在项目的 `rulesync.jsonc` 中加入以下配置。已有配置时，合并 `sources`，保留需要的 targets 和其他功能，不重复添加上游来源。
 
 ```jsonc
 {
+  "targets": ["codexcli", "claudecode", "pi", "opencode"],
+  "features": ["rules", "skills"],
   "sources": [
     {
       "source": "https://github.com/relzhong/agent-toolkit.git",
@@ -36,65 +66,83 @@ rulesync generate
 rulesync generate --check
 ```
 
-已用 Rulesync 16.4.0 验证。`install` 将远程内容放入项目的 `.rulesync/{rules,skills}/.curated/`；`generate` 生成各工具的指令和技能。提交消费项目的 `rulesync.lock`，使后续安装使用锁定的提交；需要升级时运行 `rulesync install --update`，该命令会重新解析配置中的所有来源。CI 使用 `rulesync install --frozen`。
+`install` 下载到项目的 `.rulesync/{rules,skills}/.curated/`；`generate` 输出各工具使用的指令和技能。将 `rulesync.lock` 纳入版本管理，使团队和 CI 使用相同的来源提交。
 
-工具箱来源使用 Git transport，通过已有 Git 凭据访问仓库，不依赖 GitHub Contents API 的逐文件下载配额。
+配置中的 [Matt Pocock skills](https://github.com/mattpocock/skills) 提供 `to-spec`、`to-tickets`、`grill-with-docs` 等依赖。消费项目必须显式声明这些来源，安装工具箱不会自动安装其上游依赖。
 
-本包没有传递安装机制：消费项目需要明确声明上游 sources。这里列出完整的 engineering/productivity 集合，以保留上游技能之间的依赖。Paseo 流程还需要目标环境已安装 `paseo` skill、可用的 Paseo 工具，以及工作流使用的 profiles；本仓库不分发用户的 daemon、凭据或 profile 配置。
+## 如何使用
 
-## 内容
+根据任务所处阶段选择技能，无需为每个小改动走完整流程。
 
-| 用途 | Skills |
+```text
+想法或已有讨论
+  → sketch-to-planning / conversation-to-planning
+  → grill-with-docs
+  → evidence-pack
+  → to-prd
+  → to-issues
+  → 手动执行任务 / review-loop
+  → 最终验收
+  → document-architecture-decision
+  → mark-planning-implemented
+```
+
+- 已有架构审查发现时，从 `review-to-planning` 开始。
+- 需要独立审查视角时，使用 `parallel-review`。
+- 明确选择 Paseo 编排时，使用 `review-loop-paseo`。目标环境还需安装 `paseo` skill，连接可用工具，并配置对应 profiles；这些环境配置由使用者维护。
+- `delivery-protocol` 提供共享参考，不会自行启动发布、实施或委派。
+
+技能调用方式以所用 Agent 工具为准，例如让 Agent “使用 review-loop 实现并审查这项任务”。
+
+## 与项目约定配合
+
+项目自己的 `overview.md` 可以继续使用 `root: true`，保存业务约束、技术栈和项目入口。工具箱的五条规则也都使用 `root: true`，正文会与项目规则共同合并到根级指令文件；不需要把共享正文手工复制进 overview。
+
+项目级绑定保留在项目内：
+
+| 文件 | 用途 |
 | --- | --- |
-| 从想法或调查形成计划 | `sketch-to-planning`、`conversation-to-planning`、`review-to-planning` |
-| 独立审查 | `parallel-review` |
-| 保存交付知识与归档 | `document-architecture-decision`、`mark-planning-implemented` |
-| 从证据到交付 | `evidence-pack`、`to-prd`、`to-issues`、`review-loop` |
-| Paseo 编排 | `review-loop-paseo` |
-| 共享参考协议 | `delivery-protocol` |
+| `docs/agents/issue-tracker.md` | 指定 tracker，以及规格、任务和证据的存放与发布方式 |
+| `docs/agents/domain.md` | 指定领域文档布局 |
+| `docs/agents/triage-labels.md` | 使用 triage 时的标签映射 |
 
-`delivery-protocol/references/` 随 skill 一起分发，供各阶段按需读取；安装它不会自动启动发布、实施或委派。
+已有约定直接沿用。新项目可使用上游 `setup-matt-pocock-skills` 建立配置；在 Rulesync 项目中，将它提出的根级指令修改写入 `.rulesync/rules/overview.md`，然后重新生成。
 
-五条共享规则均为 `root: true`，与项目自己的 root 规则共同合并到根级指令正文，不只是生成外部引用。保持共享规则名称唯一：本地同名规则或 skill 会覆盖 curated 版本。规则来源不决定指令优先级，`root: true` 也不授予高于用户要求的权限。检查最终生成结果，尤其是多个 targets 共用 `AGENTS.md` 时。
+文档路径示例默认使用 `CONTEXT.md`、`docs/planning/`、`docs/adr/` 和 `docs/concepts/`。项目已有其他布局时，沿用既定路径。
 
-`engineering-workflow` 是本工具箱的工作流选择。只想使用基础约束的项目可以不选它；只安装个别 skills 时，应同时安装其实际依赖。增强交付技能需要 `delivery-protocol` 和 `task-artifacts` 规则；规划技能的后续步骤需要相应的 toolkit 或上游技能。
+只需要基础约束时，可在来源的 `rules` 列表中省略 `engineering-workflow`。按需选择 skills 时，须保留其依赖；增强交付流程需要 `delivery-protocol` 和 `task-artifacts` 规则。
 
-## 项目约定
-
-项目保留自己的 `overview.md`（`root: true`），用于业务约束、项目入口和以下绑定：
-
-- `docs/agents/issue-tracker.md`：tracker、spec/ticket/evidence 的位置及发布方式。
-- `docs/agents/domain.md`：领域文档位置；默认示例使用 `CONTEXT.md`、`docs/planning/`、`docs/adr/`、`docs/concepts/`。
-- `docs/agents/triage-labels.md`：采用 triage 时的标签映射。
-
-已有配置直接沿用。新项目可以调用上游 `setup-matt-pocock-skills` 建立约定；在 Rulesync 项目中，将它提出的根级指令修改写入 `.rulesync/rules/overview.md`，然后生成，不直接修改生成文件。
-
-从旧项目迁移时：
-
-1. 先比较并保留本地修改；将已迁走的本地同名 skill 源目录移出 Rulesync 输入树，避免遮住 curated 版本。项目专属 skills 保留，安装完成前保留现有生成副本。
-2. 添加来源并安装，确认 lockfile 和磁盘均包含 12 个共享 skills、五条规则和协议 references。
-3. 将共享内容从本地 overview 移出，保留项目业务和 tracker/domain 绑定。
-4. 旧 `docs/agents/delivery-*.md` 与 `final-acceptance-review.md` 保留为入口；保留原有章节锚点，指向共享协议对应章节，历史 tickets 无需重写。
-5. 生成并检查根文件正文、技能依赖和历史链接。消费项目若将 curated 输入纳入 Git，应一并提交新的规则和技能副本以及 lockfile，使新 checkout 中的协议入口可用。
-
-Rulesync 16.4.0 在本地同名覆盖存在时，可能只将未覆盖的技能记录到新来源的 lock 条目；移除覆盖后，普通安装仍可能报告已是最新。如果已经按这个顺序安装过，需要重新解析该来源并检查完整清单。`rulesync install --update` 可以重新解析，但会涉及所有来源；本次迁移只重建了 toolkit 的 lock 条目以保留上游锁定状态。
-
-历史交付记录描述当时锁定的协议与实现状态，升级工具箱不应重写既有验收结论。
-
-## 维护
-
-共享变更在本仓库 `.rulesync/` 中修改；项目专属例外留在项目内。本仓库根级 `AGENTS.md`、`CLAUDE.md` 为生成输出，其他工具目录不纳入 Git。
+## 更新与验证
 
 ```bash
+# 使用锁定版本安装，适用于团队协作和 CI
 rulesync install --frozen
+rulesync generate --check
+
+# 更新来源后重新生成；会重新解析配置中的所有来源
+rulesync install --update
 rulesync generate
 rulesync generate --check
 ```
 
-发布前在临时消费仓库安装，验证多个 root 规则的合并、协议资源、相对链接以及本地同名覆盖行为。临时截图、日志和测试产物留在系统临时目录。
+更新后检查 lockfile 和生成差异，再提交。项目可以版本化 curated 输入，也可以在使用前执行冻结安装；无论选择哪种方式，生成和运行技能前都需要完整的安装资源。
 
-## 来源与边界
+本地同名规则或 skill 会覆盖 curated 版本。从已有本地技能迁移时，先保存并比较本地修改，移出已迁走的同名源，再安装并检查清单。Rulesync 16.4.0 在覆盖存在时安装来源，可能只锁定未覆盖项；移除覆盖后如仍缺少技能，需要重新解析来源，不能仅凭“已是最新”的提示判断安装完整。
 
-初始 11 个技能、交付协议和五条规则提取自 SCHH 的 `.rulesync/` 与 `docs/agents/`，基线提交 `59deee7c628daf5dd27e1fdffaf1521cc27fa1ce`。迁移保留验收标准、证据分层、人工与自动执行边界，并移除 SCHH 专属验证脚本路径。目录约定允许消费项目沿用现有位置。
+多个 targets 可能共用 `AGENTS.md`。生成后检查最终根文件，确认共享正文和项目约束均已保留。`root: true` 控制生成位置，不会赋予高于用户要求的指令权限。
 
-Matt Pocock 原版技能继续从原仓库安装，不在此复制维护。医院集成、kiosk 主题、AppIcon、数据库诊断 wrapper、Windows VM 和项目技术栈规则不属于本包。
+## 仓库维护
+
+```text
+.rulesync/
+├── rules/                  # 共享根级规则
+└── skills/                 # 工作流技能
+    └── delivery-protocol/
+        └── references/     # 交付协议、产物格式与最终验收
+```
+
+共享变更在本仓库的 `.rulesync/` 源文件中维护，执行 `rulesync generate` 后检查输出。根目录的 `AGENTS.md`、`CLAUDE.md` 是生成文件；其他工具目录不纳入本仓库的版本管理。
+
+发布前在临时消费项目中检查安装、根规则合并、技能资源、相对链接和本地覆盖行为。任务日志与临时产物放在系统临时目录。
+
+上游技能继续由原仓库维护；本仓库负责共享工作流扩展、交付协议和工程规则。
