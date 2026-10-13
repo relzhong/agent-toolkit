@@ -1,0 +1,94 @@
+{
+  "lockfileVersion": 1,
+  "sources": {
+    "mattpocock/skills@v1.2.3:skills/engineering": {
+      "requestedRef": "v1.2.3",
+      "resolvedRef": "6acc160e4e0cd062dbbbd7a1b26ae92855edf07e",
+      "resolvedAt": "2026-09-20T10:14:38.583Z",
+      "skills": {
+        "ask-matt": {
+          "integrity": "sha256-6fb3af09c041755fbcd5690acec49ab3b792ecf2d733c0a3be5f23b3eb16c6ba"
+        },
+        "code-review": {
+          "integrity": "sha256-53efca68ffd3d59f62e0beb890915a8ed6b48a5353472612371eed2f1eff0ebd"
+        },
+        "codebase-design": {
+          "integrity": "sha256-42f405c9a796a59fbca9e07f43225d42ce1c9f3541463099bc62eda59d6f550f"
+        },
+        "diagnosing-bugs": {
+          "integrity": "sha256-2ebbdfcea9e16308465a3f7000778d3eb9813c78a8f1563fd5f45bc62ce470c5"
+        },
+        "domain-modeling": {
+          "integrity": "sha256-5622194d032235c847b743c167cb42de137120ac2effd1937e2a71c5ed487d45"
+        },
+        "grill-with-docs": {
+          "integrity": "sha256-fc8fbd85be9aed0a61f9410629bcc040f6620d09ffc1fc78b5e63a21bca9ad70"
+        },
+        "implement": {
+          "integrity": "sha256-b49a049477c7eec7f8dd90745dbc3f27bf75617b832d5b5f33c55aab7638a12e"
+        },
+        "improve-codebase-architecture": {
+          "integrity": "sha256-de5c5a6d6db3b1c665a4e82cf18dcaa4c39360b50b3ebaedf52e072f2614aada"
+        },
+        "prototype": {
+          "integrity": "sha256-2744ef8e3dd23c2f286527100a2778e446639806b21a2a4f413b76d136a8ff7d"
+        },
+        "research": {
+          "integrity": "sha256-fb6fc6446ea4dc9db6e7863b89b77a0b4b0f1beca4a08c23d0d319fe96cd08c8"
+        },
+        "resolving-merge-conflicts": {
+          "integrity": "sha256-b1fd57782c4699ca4b19dd4322e45c84c3e9d210d3b73d65f53230fe56ee779c"
+        },
+        "setup-matt-pocock-skills": {
+          "integrity": "sha256-ceba22b05afed7055eabed7525378fbfa67366dbc39993d8726e61d8210efc8a"
+        },
+        "tdd": {
+          "integrity": "sha256-b6bbe6b93000fdfa708d88090f463a88755aa70056ce487bd7587ff96877b5b0"
+        },
+        "to-spec": {
+          "integrity": "sha256-c411a2a6037bbee2b7e289bd2c6f9c8236c073b65d4560b6be0b0ee575978e7c"
+        },
+        "to-tickets": {
+          "integrity": "sha256-dd67382350e43a7f0a6bba08123640e756e79c5d78658e81f4e6482e89786dbe"
+        },
+        "triage": {
+          "integrity": "sha256-bdf6bcef31f7bb4184358abedd20c9188636350f700249ea0cc936d88882d1fe"
+        },
+        "wayfinder": {
+          "integrity": "sha256-08b021f54f989f890cd8b6f852fc46f9fc4de5234a7cc71fa616f0268f222747"
+        },
+        "wizard": {
+          "integrity": "sha256-42920399f9833ed80f7f71e3abedc135312da06fbd96e7c4faf94afba404e476"
+        }
+      }
+    },
+    "mattpocock/skills@v1.2.3:skills/productivity": {
+      "requestedRef": "v1.2.3",
+      "resolvedRef": "6acc160e4e0cd062dbbbd7a1b26ae92855edf07e",
+      "resolvedAt": "2026-09-20T10:14:38.589Z",
+      "skills": {
+        "grill-me": {
+          "integrity": "sha256-38451dd2683eb309b4176ac5b2648ff6f86e320145baed1ac6c2e34367c8cae6"
+        },
+        "grilling": {
+          "integrity": "sha256-1830b7bdf6b41dfb066561d4aaa31f0117514517a2c870018c69b05a845598e8"
+        },
+        "handoff": {
+          "integrity": "sha256-4f7ef8b1c4e907fbf0de8e1533a16df3a991def76ef67dcb6c54fa6433d7f483"
+        },
+        "teach": {
+          "integrity": "sha256-a44fbaa67b0bfe0e4ae8007ee255a6e5e63d86309eb4077bec950f5087782297"
+        },
+        "to-questionnaire": {
+          "integrity": "sha256-17507a6727412ba31fcd948083478d140d0198d5febc636cdc094cfad7ae0f68"
+        },
+        "wait-what": {
+          "integrity": "sha256-59cbc54702960b2e8d122ce8c266e3196b511025fb4195fbcc5a851e1587afb7"
+        },
+        "writing-for-agents": {
+          "integrity": "sha256-88b5fd77c40e9f0eef1616ffc07f9a75563c0b32f50a473976c01c1ca1d0000d"
+        }
+      }
+    }
+  }
+}

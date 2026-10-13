@@ -1,0 +1,21 @@
+{
+  "$schema": "https://github.com/dyoshikawa/rulesync/releases/latest/download/config-schema.json",
+  "targets": [
+    "codexcli",
+    "claudecode",
+    "pi",
+    "opencode"
+  ],
+  "features": [
+    "rules",
+    "skills"
+  ],
+  "sources": [
+    {
+      "source": "mattpocock/skills@v1.2.3:skills/engineering"
+    },
+    {
+      "source": "mattpocock/skills@v1.2.3:skills/productivity"
+    }
+  ]
+}

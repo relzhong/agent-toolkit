@@ -1,0 +1,11 @@
+# Generated agent-specific copies; canonical sources live in .rulesync/.
+/.agents/
+/.agent/
+/.claude/
+/.codex/
+/.opencode/
+/.pi/
+/opencode.jsonc
+/rulesync.local.jsonc
+/.rulesync/rules/.curated/
+/.rulesync/skills/.curated/
