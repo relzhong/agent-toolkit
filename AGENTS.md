@@ -1,3 +1,7 @@
+# Additional Conventions Beyond the Built-in Functions
+
+As this project's AI coding tool, you must follow the additional conventions below, in addition to the built-in functions.
+
 # Engineering Workflow
 
 Use the stages relevant to the user's request. Existing approved plans and decisions remain valid; do not restart completed stages or manufacture a specification and ticket tree for a small direct task.

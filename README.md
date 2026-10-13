@@ -30,14 +30,20 @@
 
 ## 快速开始
 
-已使用 Rulesync 16.4.0 验证。安装本工具箱需要 Rulesync 和 Git；私有仓库访问使用现有 Git 凭据。
+以下配置已使用 Rulesync 33.0.0 验证。安装本工具箱需要 Rulesync 和 Git；私有仓库访问使用现有 Git 凭据。
 
-在项目的 `rulesync.jsonc` 中加入以下配置。已有配置时，合并 `sources`，保留需要的 targets 和其他功能，不重复添加上游来源。
+在项目的 `rulesync.jsonc` 中加入以下配置。已有配置时，合并 `sources`，保留需要的 targets 和其他功能，不重复添加上游来源。示例按 target 分配规则和技能；使用对象形式的 `targets` 时，删除顶层 `features`，将项目已用的其他功能保留在相应 target 中。
 
 ```jsonc
 {
-  "targets": ["codexcli", "claudecode", "pi", "opencode"],
-  "features": ["rules", "skills"],
+  "$schema": "https://github.com/dyoshikawa/rulesync/releases/latest/download/config-schema.json",
+  "targets": {
+    "codexcli": ["skills"],
+    "claudecode": ["rules", "skills"],
+    "pi": ["skills"],
+    "opencode": ["rules", "skills"],
+    "agentsmd": ["rules"]
+  },
   "sources": [
     {
       "source": "https://github.com/relzhong/agent-toolkit.git",
@@ -129,7 +135,15 @@ rulesync generate --check
 
 本地同名规则或 skill 会覆盖 curated 版本。从已有本地技能迁移时，先保存并比较本地修改，移出已迁走的同名源，再安装并检查清单。Rulesync 16.4.0 在覆盖存在时安装来源，可能只锁定未覆盖项；移除覆盖后如仍缺少技能，需要重新解析来源，不能仅凭“已是最新”的提示判断安装完整。
 
-多个 targets 可能共用 `AGENTS.md`。生成后检查最终根文件，确认共享正文和项目约束均已保留。`root: true` 控制生成位置，不会赋予高于用户要求的指令权限。
+旧版 lock 缺少选择记录时，Rulesync 33 的普通 `install` 会在锁定提交重新获取来源并补充 `skillSelection`；检查并提交这些元数据即可。输入已完整安装时，`install --frozen` 可以复用旧 lock。上游声明的 `disable-model-invocation: true` 会生成 Codex 调用控制文件，这些技能保留显式调用方式。
+
+## 多工具规则入口
+
+示例让 `agentsmd` 保持在 targets 的最后，负责最终公共 `AGENTS.md` 和 `.agents/memories/` 规则索引。Codex CLI 和 Pi 读取公共入口，不再各自生成随后被覆盖的完整规则正文；它们的技能继续分别生成。Claude Code 保留自己的规则输出。OpenCode 仍生成原生 memories 和配置，其同名根文件由最后的 `agentsmd` 输出替换。执行完整的 `rulesync generate` 来刷新公共入口；单独生成其他 target 的 rules 可能改变最终根文件。
+
+根文件保留共享规则和项目关键约束，详细规则通过索引读取。在项目自己的 overview 中明确要求：修改或审查文件前，读取所有匹配路径的规则正文；任务范围扩大时重新检查；没有路径过滤的规则使用明确的任务触发条件；生成副本缺失时回到 `.rulesync/rules/` 源文件，必要规则不可用时说明缺失并暂停受影响的工作。索引不是规则正文，也不代表每个工具都会自动按 glob 加载。
+
+生成后确认共享正文、项目约束、索引目标和各工具技能均完整，并检查根文件大小。生成检查验证文件一致性，运行时是否遵循加载要求还需按实际工具验证。`root: true` 控制生成位置，不会赋予高于用户要求的指令权限。
 
 ## 仓库维护
 
