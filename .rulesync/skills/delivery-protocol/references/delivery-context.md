@@ -35,7 +35,7 @@ Local criteria describe the ticket's verifiable contribution and map to parent I
 
 ## Execute and report
 
-Before editing, reconcile the working set, local criteria, invariants, intended surface, exclusions, and ambiguities. In manual single-agent work this is an internal check, not a separate human approval gate. Finish with a concise report for the user. In orchestrated work, use the grounding mode explicitly assigned by the Lead under `/review-loop`: read-only grounding waits for authorization, while settled work may be preauthorized to ground then implement. Record the result either way; unresolved conflicts or material uncertainty return the affected work to the Lead.
+Before editing, reconcile the working set, local criteria, invariants, intended surface, exclusions, and ambiguities. In manual single-agent work this is an internal check, not a separate human approval gate. Finish with a concise report for the user. In orchestrated work, follow the grounding mode assigned under `/review-loop`: settled work defaults to preauthorized ground then implement; read-only grounding is reserved for unresolved decisions and waits for authorization. Record the result either way; unresolved conflicts or material uncertainty return the affected work to the Lead.
 
 Persist completion evidence in the ticket so another session can resume without conversation history:
 
