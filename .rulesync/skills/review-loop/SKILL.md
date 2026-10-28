@@ -1,8 +1,7 @@
 ---
 name: review-loop
 description: >-
-  Run a Lead-controlled implementation/review/fix loop with grounded inputs, acceptance evidence, one writer and one reviewer by default, and focused validation. Use when asked to implement then review, review until clean, run a review/fix loop, or validate a substantial current diff.
-
+  Implement, independently review, and fix a work unit through the current executor and fresh-context subagents. Use for implementation/review/fix requests or a substantial current diff; whole-spec runs finish with parallel review.
 targets:
   - pi
   - claudecode
@@ -12,93 +11,62 @@ targets:
 
 # Review Loop
 
-Load the installed `delivery-protocol` skill once before using the shared references below. Resolve project paths from the target project root, not this skill directory. If a sibling skill link is unavailable, locate that installed skill by name; do not assume an agent-specific installation path.
+The current executor owns the work unit through implementation, independent review, repairs, and validation. It can be the main session or an assigned subagent; do not create another controller or writer merely to run this skill. Keep one product-code writer per worktree.
 
-## Purpose
+Use the requested backend and explicit provider/model/effort choices. For requested Paseo orchestration, apply [Review Loop Paseo](../review-loop-paseo/SKILL.md) once for profiles, dispatch, and notifications; it reuses this loop, not a second loop. An unavailable required role blocks the affected work; report it without silently changing providers or replacing independent review with self-review.
 
-Run a cost-aware workflow controlled by the parent AI agent (the Lead):
+## Establish the work unit
 
-```text
-optional investigation → grounding → implementation → acceptance/risk review
-→ Lead synthesis → accepted fixes → affected validation/re-review → delivery
-```
+Read the actual task, applicable repository rules, requirements, constraints, and relevant decisions. An explicit review-only request stays read-only; the skill name does not grant repair or delivery permission. For an existing target diff, skip implementation and start review. Reuse approved plans; resolve ordinary implementation details without re-interviewing the user. Identify the change baseline, existing edits, ownership, allowed delivery actions, and required checks. A proposed file list is navigation, not an approval gate for necessary in-scope adjacent edits.
 
-Keep one writer per active worktree. Children must not manage the loop or delegate unless explicitly assigned a bounded fanout role. Delegate a verifiable behavior through implementation and focused validation, not individual commands or files. Treat proposed file lists as navigation, not approval gates: necessary adjacent edits within the approved design proceed with applicable rules and validation. Honor explicit user/repository boundaries and concurrent ownership. Escalate material scope, trust-boundary or design changes, uncertain repair, manual actions and blocked routing; routine fixes stay with the writer.
+For tasks declaring the enhanced delivery protocol, load [Delivery Protocol](../delivery-protocol/SKILL.md) and its working-set rules. Read mapped parent criteria and shared constraints, not every linked artifact. For ordinary tasks or legacy diffs, use their actual requirements and evidence; do not manufacture a spec, criterion IDs, or an evidence pack. Load references only when the next decision needs them. A `final-review` ticket goes directly to **Whole-spec acceptance**, not to ordinary implementation.
 
-## 1. Establish Inputs and Execution Roles
+The executor may request a bounded, read-only reviewer and, when needed, a technical advisor for this work unit. Pass each only its target, requirements/constraints, accessible references, allowed actions, and return contract. Reviewers/advisors do not edit product code or delegate. Do not give them the entire orchestration manual or implementation history.
 
-Read [delivery-context](../delivery-protocol/references/delivery-context.md). Identify the ticket, parent spec, assigned local criteria and parent AC revisions, mandatory constraints, and selected context anchors. Load the mandatory working set; drill into reference code only when needed. Preserve confirmed requirements if a ticket compressed them incorrectly. Repository instructions and confirmed design decisions remain applicable; evidence labels do not create new requirements.
+Verify that the backend can create genuinely fresh review context. A fork/resume or a new session stuffed with old chat is not independent review. If the executor cannot dispatch, an existing authorized caller may relay the request/result within the selected backend; state the limitation and keep technical handling with the executor. Otherwise report the missing capability. Do not build a new controller or bypass tool permissions.
 
-For legacy tickets/direct diffs without a parent, use the actual approved user requirements and available acceptance criteria, state what is missing, and avoid claiming whole-spec closure. Ordinary clear tasks need no invented spec, AC migration, or evidence pack. Missing information that prevents correctness judgment needs clarification. A selected `Type: final-review` ticket goes directly to the final acceptance procedure in step 7, not to an implementation worker.
+## Implement and validate
 
-Honor the user's selected backend and named profiles. Availability alone does not select Paseo. With requested Paseo orchestration, apply [Review Loop Paseo](../review-loop-paseo/SKILL.md) for dispatch, worker lifetime, notifications, and ticket delivery. Read each skill once; when entered through that wrapper, continue this shared procedure without routing back. Otherwise use available native fresh-context agents for the same roles, unless the user selected another execution arrangement.
+Reconcile the work unit and constraints, then continue through implementation, in-scope fixes, and focused checks. Grounding is part of execution, not a separate approval stop for settled work. Investigate missing facts only when needed; use TDD when requested and the project's existing test seams/runners.
 
-An explicitly selected profile/provider/model is binding. If it cannot start or is quota-, rate-, authentication-, or availability-blocked, preserve state, stop that workstream, report the exact role and reason, and ask how to proceed. Other independent work may continue only if it does not require that role. Do not silently change models/thinking levels, substitute native agents, use Architecture Review as a fallback, or let the Lead become the unavailable worker without explicit authorization.
+For cross-module changes, exercise a thin real integrated path early, including relevant failure behavior. Expand focused tests from that feedback. When a real dependency is unavailable, state what was and was not exercised; fixtures are not native E2E proof.
 
-Profile notes guide role selection; they are not automatically the worker's instructions. The Lead must put the applicable role constraints into the actual task prompt (`initialPrompt` on Paseo `create_agent`, or the equivalent native delegation prompt), together with:
+Identify required broad gates and one validation owner. Use the smallest relevant checks during iteration and reuse valid results across handoffs. Run required integration/full checks at the appropriate integration or delivery boundary; rerun affected checks when code, assertions, configuration, dependencies, or requirements change. Existing hooks still run. Preserve original command exits and tested state; keep raw captures in task-specific temporary storage.
 
-- Role, current phase, and allowed actions: read-only investigation/review/grounding, implementation, accepted fixes, or validation only.
-- Work unit, parent spec when present, assigned criteria/AC revisions, and durable paths to applicable repository instructions, mandatory decisions, and on-demand references. Verify those paths are accessible in the worker's checkout.
-- Approved scope, invariants, and explicit exclusions; include only the selected role's relevant constraints rather than every profile's notes.
-- The phase-specific return contract from the steps below: grounding summary, investigation evidence, criterion judgments/findings, or implementation/validation results.
-- The stopping condition and whether to wait for Lead authorization. State that the child must not delegate or manage the loop unless this assignment explicitly permits a bounded fanout.
+Pause only affected work for a material scope/design change, uncertain side effects, missing authorization, or an unresolved decision. Do not turn a failed validation into a new recovery subsystem or other unapproved requirement.
 
-On follow-up, explicitly identify any phase transition and newly allowed actions. In particular, an Implementation profile assigned read-only grounding must wait for the Lead's implementation instruction before editing. Conversation inheritance and selecting a profile do not replace this task contract.
+## Review a stable work unit
 
-## 2. Investigate Only When Needed
+When the cohesive change is review-ready, use [Parallel Review](../parallel-review/SKILL.md) with **one fresh, read-only reviewer by default**. This caller-selected count overrides that skill's standalone parallel default. Add reviewers only for requested parallel review or a material independent risk that one reviewer cannot responsibly cover.
 
-Skip investigation when requirements, ownership, files, and direction are clear. Otherwise use one read-only scout/Investigation worker to inspect the missing facts, test competing hypotheses when diagnosing, rule out causes, and return only relevant files/symbols, evidence, uncertainty, focused commands, and the best next step. Investigation does not make speculative production fixes.
+Supply the original requirements, relevant parent criteria/constraints, correct work-unit baseline and diff, and available validation evidence. Ask for independent acceptance coverage, evidence-backed findings, and verification limits. For enhanced tickets, return local criterion judgments separately from partial parent contributions. Inspect changed/deleted tests for weakened assertions; passing tests do not alone establish acceptance.
 
-Before escalating an unresolved high-impact problem to Architecture Review, gather a concise evidence package through the appropriate cheaper role. For queued dependency-safe work, read-only investigation may run alongside the active writer; avoid scouting assumptions still being changed by prerequisites.
+Keep the reviewed target stable while reviewers inspect it. If it changes, disclose the new state and renew affected conclusions. Reviewers reuse valid checks and run only missing focused checks, not duplicate full suites.
 
-## 3. Ground, Then Implement
+## Resolve findings
 
-The Lead selects the grounding mode in the dispatch. Use **read-only grounding** when requirements conflict, ownership/trust boundaries are unresolved, or implementation direction needs a decision. The worker returns the work unit, criteria/revisions, anchors read, invariants, edit surface, exclusions, and uncertainties, then waits for explicit Lead authorization.
+The executor evaluates findings against requirements and evidence. Accept demonstrated in-scope defects; reject or defer unsupported claims, duplicates, stylistic churn, speculative hardening, and unrelated refactors with concise reasons. Do not accept every suggestion or dismiss a valid blocker to declare completion.
 
-For settled work, default to **ground then implement** in the initial assignment. The writer reconciles requirements, invariants and relevant rejected approaches, records concise grounding in its existing evidence, and continues through implementation, in-scope fixes and focused validation. Return only a review-ready result or a concrete blocker; a grounding-only response is incomplete under this authorization. The Lead checks grounding with implementation evidence. Pause only affected work for a conflict or material uncertainty.
+Repair accepted defects through the existing writer. Start with one fix pass and, when warranted, one narrow re-review using that work unit's reviewer. Mechanical low-risk fixes with adequate validation need no repeated broad review. Changed acceptance assertions, disputed findings, or material risk warrant focused re-review; test-only edits are not automatically exempt.
 
-The authorized writer implements only approved scope, uses TDD when requested, and runs focused validation. If direction becomes materially unclear, return to investigation rather than making broad speculative changes. If the existing diff is already the target, skip writing and begin review with the working set; do not retroactively treat the diff as proof of the intended requirements.
+Continue only while there is a concrete remaining defect, a bounded repair, and a useful verification. Repeated non-progress, materially growing cost/risk, or a new decision triggers escalation, not an infinite loop. Request a read-only technical advisor for a specific design/diagnostic question with evidence and alternatives. Advisors do not authorize scope changes or operational actions. Ask the user through the current task's communication path when a human decision or permission is needed.
 
-For cross-module work, establish a thin integrated check early: exercise the real entry through relevant worker/consumer, state changes and observable outcome, plus the critical failure/recovery path. Use it to expose broken joins before accumulating isolated component proofs; expand focused tests from there. If an external dependency is unavailable, test the available joins and state the boundary; fixtures do not establish native E2E success.
+A failed agent turn is not itself a failed review, and a successful turn is not acceptance. Retain usable findings, inspect coverage, and supplement only important missing evidence. Missing required review/checks stay unverified; do not silently call them clean.
 
-The writer reports changed files, commands/exit codes, criterion evidence tied to the tested state, remaining risks, and anything undone. Treat the report as review input, not automatic completion.
+## Complete and return
 
-## 4. Review Acceptance and Risk
+Complete only when the work unit's acceptance criteria and required checks pass, accepted blockers are resolved, and the delivered state matches the evidence. Persist a concise record in the existing ticket/evidence location; direct tasks can use their normal report. Record accepted/rejected findings and any remaining limits without duplicating full transcripts.
 
-Use one new, read-only reviewer session per completed work unit, covering the cohesive change rather than reviewing each intermediate step. Reuse it for that unit's narrow re-review, not unrelated tickets; calling an old session “fresh” does not reset context. It independently checks **all local criteria**, parent requirements, shared constraints, actual diff and evidence. Select an additional risk focus using [Parallel Review](../parallel-review/SKILL.md); that specialty does not limit acceptance coverage.
+Perform already-authorized documentation, commits, and other delivery actions together after verification; preserve unrelated edits and required hooks. This does not grant push/deployment permission. Operational runs may continue through successful authorized stages without per-command approval, but stop on unexpected failure or uncertain effects rather than blindly replaying operations.
 
-For each local criterion return `PASS`, `FAIL`, `PARTIAL`, or `UNKNOWN` with evidence and its limits. Record parent contributions separately: a complete local slice may leave a parent AC `PARTIAL` until integration. Then report additional actionable findings with severity, file/line evidence, impact, and the smallest safe fix. Inspect changed/deleted tests for weakened behavior assertions; a passing edited test is not automatically valid acceptance evidence.
+Return the work unit, `complete / blocked / partial`, evidence location and tested state, delivery status, and any blocker/next action. `review-ready` is an internal checkpoint, not a completed issue report. Another caller needs this receipt, not the full implementation/review history. Completion of a local slice does not establish whole-spec acceptance.
 
-Add another reviewer only for explicitly requested parallel/adversarial review or an independent material risk the assigned reviewer cannot responsibly cover. Reviewers inspect evidence and may run missing focused checks; the Lead coordinates expensive/full checks through the appropriate authorized execution role. Reviewers do not edit implementation or apply their own fixes.
+## Whole-spec acceptance
 
-## 5. Synthesize and Manage Repairs
+For an authorized batch, respect dependencies and ownership; do not extend a single-ticket request to the remaining backlog. After delivery prerequisites complete, verify the integrated feature against every current parent requirement and shared constraint, using the feature baseline rather than the last ticket's base. Enhanced tasks use [Final Acceptance Review](../delivery-protocol/references/final-acceptance-review.md); legacy work records equivalent evidence with its existing parent.
 
-The Lead accepts only demonstrated, in-scope correctness/requirement findings, including relevant persistence, authorization, concurrency, retry/dispatch, data-loss, privacy, public-contract, or financial-integrity defects. Reject speculative hardening, unrelated refactors, stylistic cleanup, duplicates, and future-proofing. A known unavailable check is not itself a code defect, but a required unverified criterion remains `UNKNOWN` and cannot be called complete.
+Reuse valid deterministic checks and complete missing required checks. At this final stage, **automatically invoke parallel-review by default**, normally with two fresh reviewers and additional views only as justified by risk or explicit user choices. Ensure whole-spec coverage and cross-ticket integration are examined; specialist views complement, not replace, acceptance judgments. Include an architecture view when useful instead of adding a mandatory Architecture Review after the parallel group.
 
-Route accepted fixes to one writer, preferably the original Implementation worker. Preserve scope and update affected evidence. Use narrow re-review for material risk or a disputed/changed acceptance assertion. Re-review only the findings, fixes, and affected criteria. Mechanical low-risk fixes with sufficient validation need no repeated broad review; test-only changes are not categorically exempt.
+Synthesize the evidence, route accepted repairs to the authorized writer, and renew only affected validation/review. Parallel findings alone do not prove all criteria pass. Keep final acceptance open while required claims remain partial or unknown. Explicit user overrides apply; unavailable review capability must be reported, not disguised as completion.
 
-Start with one fix pass and at most one targeted re-review of that pass. The Lead may authorize a further pass when evidence identifies a concrete remaining defect, a bounded repair, and a specific verification likely to resolve it; briefly state that expectation. If the next repair is uncertain, previous passes repeat without progress, cost/risk materially grows, or a new decision is needed, preserve the state and ask the user whether/how to continue. A round limit or optimism never turns unresolved acceptance into success.
-
-## 6. Validate and Complete the Work Unit
-
-Identify required checks from the task, repository scripts, and hooks at setup, including the intended delivery action. Name one full-validation owner; other workers run only assigned focused checks. During TDD use the smallest check that proves the current behavior through the repository's standard runner and admission. Preserve required real database and integration evidence.
-
-Coordinate required expensive/shared gates once at the appropriate final integration or pre-commit point while their evidence remains valid. For each result record command/exit, exercised behavior and tested state in the existing evidence record. After relevant code, assertions, configuration, dependency, or criterion changes, rerun affected checks, including the full gate when necessary. Required hooks still execute at commit/push; an earlier check does not waive them. The Lead assigns execution to the authorized validation/implementation role; Architecture Review consumes those results rather than running the gate itself.
-
-Before completing a delivery ticket, confirm every local criterion and required check passes, accepted blockers are fixed, and the final diff remains in scope. Persist the execution/evidence record required by Delivery Context, applying the artifact lifetime and commit boundary in [delivery-artifacts](../delivery-protocol/references/delivery-artifacts.md). Partial parent ACs remain visible. After acceptance, batch authorized documentation, commit, push and CI follow-through into one assignment; keep hooks and validate the delivered state. This does not grant missing push/deployment authorization.
-
-For an authorized operational run, let the owner continue through successful stages without a new Lead release at every checkpoint. Preserve product approval gates; pause on unexpected failure, uncertain effects, potential data replay or actions outside authorization. A code-review loop is not a per-command deployment approval loop.
-
-## 7. Multiple Tickets and Final Acceptance
-
-The Lead controls the dependency graph. Run dependent tickets only after prerequisites complete. When parallel work is authorized, keep independent ready work moving while another stream waits. Use separate worktrees with no likely overlap in files, interfaces, migrations, shared contracts or coupled behavior; keep at most two writers, or the user's lower limit. Integrate results before validating the combined state.
-
-For a whole-spec assignment, execute the final review ticket using [final-acceptance-review](../delivery-protocol/references/final-acceptance-review.md) after all delivery prerequisites complete. If working from a legacy issue set, record the equivalent final acceptance evidence with the parent instead of manufacturing a new workflow tree. A request for one delivery ticket does not authorize implementing the rest; report remaining final acceptance work.
-
-The Lead owns whole-spec acceptance, checks every current parent AC and shared constraint, and persists the result. After deterministic integration checks pass, use a fresh Architecture Review only for substantial integrated changes or material design/public-contract/persistence/concurrency/security/cross-module risk. Supply the integrated diff and grounded evidence. Small local changes still receive final requirement verification without a mandatory architecture specialist. Any resulting fixes return through step 5 and invalidate affected validation/review claims.
-
-## Finish
-
-At a completed batch boundary, keep a concise current-state index with decisions, pending work, worker ownership and evidence links. If Lead history is dominated by completed work or repeated compaction, hand off this index to a fresh controller session when supported; otherwise report the renewal need. Preserve active assignments rather than restarting them. Report milestones, real blockers and completion, not every internal handoff.
-
-Summarize work units and order/parallelism, backend/profiles used, investigation and grounding, local/parent acceptance status, accepted/rejected findings, repairs and continuation decisions, validation/state, commits when requested, whether Architecture Review was used and why, residual risks, and any unrun checks or stop reason. Link the durable ticket/final acceptance record so a manual session can resume.
+This automatic final-review policy belongs to this workflow. Manual ticket execution does not invoke it implicitly: the user chooses whether to request parallel review, while the same whole-spec completion conditions still apply.

@@ -10,7 +10,7 @@ Use this protocol when producing or executing tickets from the installed `/to-pr
 - **Planning** retains design reasoning, rejected alternatives, and open questions. Mark superseded decisions explicitly.
 - **Evidence** retains sources, observations, excerpts, and their trusted scope. A label such as `Canonical` or `MUST FOLLOW` cannot promote an agent's inference into an approved requirement.
 
-Follow explicit supersession records. A ticket may narrow the work unit but cannot weaken its parent's requirements. Report a ticket/spec mismatch and preserve the confirmed requirement; if correcting it requires a product, scope, or architecture decision, ask the user and pause only affected work. Lead approval of grounding does not authorize new constraints or weaker acceptance.
+Follow explicit supersession records. A ticket may narrow the work unit but cannot weaken its parent's requirements. Report a ticket/spec mismatch and preserve the confirmed requirement; if correcting it requires a product, scope, or architecture decision, ask the user and pause only affected work. An execution checkpoint does not authorize new constraints or weaker acceptance.
 
 ## Load a working set
 
@@ -35,7 +35,7 @@ Local criteria describe the ticket's verifiable contribution and map to parent I
 
 ## Execute and report
 
-Before editing, reconcile the working set, local criteria, invariants, intended surface, exclusions, and ambiguities. In manual single-agent work this is an internal check, not a separate human approval gate. Finish with a concise report for the user. In orchestrated work, follow the grounding mode assigned under `/review-loop`: settled work defaults to preauthorized ground then implement; read-only grounding is reserved for unresolved decisions and waits for authorization. Record the result either way; unresolved conflicts or material uncertainty return the affected work to the Lead.
+Before editing, reconcile the working set, local criteria, invariants, intended surface, exclusions, and ambiguities. For settled, authorized work this is an execution check, not a separate approval gate. Pause affected work for unresolved conflicts or material uncertainty and request the needed decision through the selected workflow. Execution ownership, delegation, and communication are determined by that workflow, not this protocol. Finish with a concise result and durable evidence.
 
 Persist completion evidence in the ticket so another session can resume without conversation history:
 

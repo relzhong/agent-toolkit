@@ -1,8 +1,7 @@
 ---
 name: parallel-review
 description: >-
-  Runs a fresh-context, multi-reviewer adversarial review with dynamically selected, non-overlapping reviewer specialties and parent synthesis. Use when the user asks for a parallel review, three-reviewer review, adversarial review, or independent review perspectives on a diff, plan, or implementation.
-
+  Review a diff, plan, or implementation with fresh-context reviewers and evidence-based synthesis. Use for parallel/adversarial review or as the reviewer-selection method inside review-loop.
 targets:
   - pi
   - claudecode
@@ -12,70 +11,40 @@ targets:
 
 # Parallel Review
 
-## Purpose
+Provide independent inspection and a synthesized report, not another implementation loop. The caller may be the main session or a delegated executor; it need not be a top-level controller. Reviewers remain read-only and do not delegate.
 
-Provide the shared reviewer-selection method for parallel reviews and review loops. The parent means the main AI agent, not the human user. The parent autonomously selects and assigns reviewer specialties, remains the final workflow decision-maker, and asks the user only about genuine product, scope, or architecture decisions. Reviewers inspect the target independently, report evidence-backed findings, and do not edit project files unless explicitly assigned a writer pass.
+## Scope and coverage
 
-For a direct parallel-review request, launch three reviewers by default. A workflow that reuses this skill, such as `review-loop`, may select only the smallest valuable subset and must not inherit the default count blindly.
+Read the requested target and applicable instructions before dispatch. Identify the requirements, stable revision/diff boundary, available evidence, and independent failure domains. A plan or document review uses its own source and correctness criteria; do not require a code diff or executable tests where none apply.
 
-## Scope First
+Use the caller's explicit count and angles. For standalone parallel review, default to **two** reviewers; add a third for a materially distinct risk. A workflow reusing this method may select **one** reviewer for an ordinary issue. Honor user-specified counts; do not manufacture generic specialties merely to reach a default number.
 
-Treat any URL, issue, file, plan, or freeform focus in the request as the primary scope. Read or fetch it before choosing reviewers. Inspect the current diff and applicable repository instructions, then pass the target and angle explicitly to every reviewer.
+Assign scopes before dispatch, without asking the user to manage reviewer selection. For code/issue review, ensure requirements, correctness, and regression coverage have an owner; additional views focus on actual independent risks. Useful domains include security/privacy, persistence/concurrency, contracts/integration, test adequacy, UX/accessibility, and documentation fidelity. Simplicity findings must identify a concrete cost or defect, not generic preferences. A single reviewer covers the whole required scope rather than only one narrow specialty.
 
-## Reviewer Selection
+For whole-spec review, map all current acceptance requirements and cross-ticket behavior to the review scopes. Avoid both duplicated full reviews and gaps caused by everyone inspecting only a specialty.
 
-Selection is automatic. Do not ask the user to choose reviewer count or specialties unless they explicitly want that control. Before launching reviewers, the parent inspects the request, changed files, diff, tests, and applicable instructions; maps the change to independent failure domains; ranks them by impact and uncertainty; chooses the required count; and assigns one explicit specialty to each reviewer.
+## Dispatch
 
-Select specialties from independent failure modes in the actual change, not from a fixed generic list. Prefer risks involving security, privacy, authorization, money, persisted data, concurrency, migrations, and public contracts over generic style concerns. Break ties by choosing the least-overlapping specialty that could reveal a materially different failure. Never ask reviewers to choose their own specialties.
+Use fresh context unless the user explicitly requests otherwise; disclose inherited context rather than presenting it as independent. Supply each reviewer only:
 
-Use these reviewer specialties as a menu:
+- The target, stable base/revision, assigned coverage, and original requirements/constraints.
+- Accessible source and validation-evidence pointers; not the author's implementation chat or self-assessment as a substitute for inspection.
+- Read-only/no-delegation scope and the result contract below.
 
-- **Correctness and regressions:** requirements, behavior, edge cases, error paths.
-- **Security and privacy:** authorization, trust boundaries, unsafe input/output, secrets, personal data, redaction.
-- **Persistence and concurrency:** schemas, migrations, transactions, queues, races, retries, shutdown, failure isolation.
-- **Contracts and integration:** API/events/configuration, shared types, external systems, cross-client compatibility.
-- **Tests and validation:** test layer, meaningful assertions, missing cases, adequacy of verification evidence.
-- **UX and accessibility:** user flows, state feedback, copy, keyboard/screen-reader behavior, visual consistency.
-- **Types and boundaries:** source-of-truth types, casts, module ownership, error boundaries, testability.
-- **Simplicity and maintainability:** unnecessary complexity, duplication, brittle abstractions, naming, cleanup worth doing now.
-- **Documentation accuracy:** implementation fidelity, completeness, reader flow, operational safety, non-robotic prose.
+Ask for actionable findings with severity, file/section evidence, the violated requirement or plausible failure path, impact, and smallest safe repair. Distinguish blockers, fixes worth doing now, optional observations, and checks that remain unverified. No findings is a valid result; do not demand a quota or broad best-practice essays. Where the caller requests criterion judgments, include their evidence and limits.
 
-For direct invocation, choose the three highest-value non-overlapping specialties unless the user requests another count or names the angles. If fewer user-specified angles are provided than requested reviewers, fill only with genuinely independent missing specialties.
+Run independent views concurrently when supported. Reviewers inspect actual sources, reuse valid evidence, and run only missing focused checks. Assign broad/expensive validation once to an authorized owner. Keep the target stable during review; relevant changes invalidate affected conclusions.
 
-For reuse by another workflow, return to the workflow's risk-based count. One reviewer is enough when one specialty dominates; two cover two independent risks; three are reserved for broad or high-risk changes spanning at least three domains.
+## Synthesize
 
-## Reviewer Prompt Contract
+The caller checks findings against evidence and scope, merges duplicates, and returns accepted defects, decisions requiring the user, optional improvements, and rejected/deferred feedback with concise reasons. Resolve conflicting claims by inspection or a focused check, not majority vote. This is targeted synthesis, not another full review of everything.
 
-Use fresh context unless the user explicitly requests inherited context. Ask each reviewer to:
+Agent completion/error status is not a correctness verdict. Preserve usable results even after a transport failure; retry only missing material coverage, not the entire group. Report unavailable checks and truncated/missing evidence honestly. Do not label an incompletely reviewed target clean.
 
-- inspect repository instructions, the named scope, and current diff directly
-- stay within its assigned specialty
-- return concise findings with severity, file/line evidence, impact, and smallest safe fix
-- distinguish blockers and fixes-now from optional observations
-- avoid edits and avoid broad context summaries
-- inspect existing validation evidence and run only missing focused checks
+## Authorized fixes
 
-Do not have every reviewer run the same full test suite. Run shared expensive validation once through the parent or writer where practical.
+Standalone review is read-only unless the user explicitly requests `autofix` or otherwise authorizes fixes. Quoting or discussing the word is not authorization. A caller already executing an authorized implementation/fix loop needs no repeat approval for routine in-scope repairs.
 
-## Execution and Failure Handling
+Return findings to that existing writer. If standalone autofix has no writer, use one authorized writer for accepted fixes only; reviewers never switch into writers. Run affected validation and report the resulting state. Optional improvements require separate authorization.
 
-Run selected reviewers in parallel. While they work, the parent may perform a narrow independent inspection.
-
-If a reviewer fails after returning usable findings, keep the findings. Retry only when the failed reviewer covered a critical risk with no surviving evidence; retry that specialty alone rather than restarting the full group.
-
-## Parent Synthesis
-
-Merge duplicate findings and classify the result into:
-
-- blockers or decisions requiring the user
-- fixes worth doing now
-- optional improvements
-- unsupported, duplicate, or deferred feedback, with a short reason
-
-Do not apply every suggestion blindly.
-
-## Autofix Mode
-
-If the user includes the exact word `autofix`, treat it as workflow control rather than review scope. After synthesis, use one writer to apply only fixes worth doing now, validate once, and summarize. Do not apply optional improvements unless explicitly requested.
-
-Without autofix, ask before editing unless implementation or addressing review feedback was already authorized. Offer a compact choice between fixes-now only and fixes plus optional improvements when both exist.
+Do not start another review-loop from this skill or automatically repeat the parallel group. The calling execution workflow owns any warranted targeted re-review and final acceptance. Without repair authorization, report the findings and request permission only if the user wants them applied.

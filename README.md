@@ -100,7 +100,32 @@ rulesync generate --check
 
 技能调用方式以所用 Agent 工具为准，例如让 Agent “使用 review-loop 实现并审查这项任务”。
 
-实现循环按可验收功能连续推进：方向明确时先核对上下文再直接实现，跨模块任务尽早验证最薄的完整链路，完成后集中独立审查。普通相邻文件修改和已授权步骤不逐项回报等批准；真正的范围、权限或不确定副作用仍需停下处理。新工作单元使用新审查会话，Paseo 派发异常先对账再等待，避免把流程交接当成交付进展。
+### 执行与审查的三层边界
+
+| 层 | 负责什么 |
+| --- | --- |
+| `delivery-protocol` | 需求、证据、完成与整体验收条件；不绑定 agent 角色、人数或通知机制 |
+| `review-loop` | 当前执行者实现、自测、调用干净上下文 reviewer、处理反馈并验证；不要求另建 Lead |
+| `review-loop-paseo` | 在共享闭环上增加薄 Lead、saved profiles、派发、通知与恢复 |
+
+普通会话或受委派执行者都能运行通用闭环：
+
+```text
+当前执行者：实现 → 自测 → 独立 reviewer → 修复与验证 → 交付
+Paseo Lead：派发就绪 issue → Implementation 运行上述闭环 → 接收结果 → 推进依赖
+```
+
+普通 issue 默认一个 reviewer；直接请求 `parallel-review` 默认两个，第三个用于额外的实质独立风险，显式人数/视角优先。自动 `review-loop` 到最终整体验收时默认调用并行审查，检查整个功能的要求覆盖和集成状态；不固定再叠加 Architecture Review。人工执行仍要满足同样的验收条件，但是否调用并行审查由用户决定。`to-issues` 生成的 final-review issue 不绑定审查方式。
+
+`parallel-review` 负责审查和综合证据，不另起执行循环。显式 `autofix` 或已授权的修复由现有 writer 处理；reviewer 始终只读。反馈按证据与范围判断，不按票数，也不要求每位 reviewer 都找出问题。
+
+Paseo 的 Implementation 可在当前 issue 内调用 reviewer 和按需技术顾问，不派发其他 issue 或递归创建 agent 树。Architect 处理具体技术难题，需求、范围和权限决定仍需用户授权。Lead 检查完成证据与依赖条件，不逐命令放行或重复技术审查。`review-ready` 是 issue 内部状态；向 Lead 返回的是完整闭环后的结果或真实阻塞。
+
+只要求本次实际需要的 profiles。旧 profile 备注若仍禁止委派或要求每轮修复回 Lead，派发提示需明确与用户选定的新工作流协调，不同时传递矛盾规则；不隐式修改保存的 profiles，也不绕过工具权限。Implementation 缺少子代理工具权限时，可由既有 Lead 显式代派并转发，技术处理仍由 Implementation 负责；无法获得独立审查则报告能力阻塞，不暗中改模型或自审。新 session ID、fork/resume 不等于干净上下文；派发异常先对账，通知缺失不触发重复写入。
+
+范围清楚的工作直接执行，跨模块任务尽早验证最薄的真实链路。当前问题仍有效推进时允许原生 compaction，不设置固定 token 清空红线；任务边界只传当前状态和证据指针。自动续跑和通知依赖实际 harness 能力，不承诺仅靠技能即可实现永久后台调度或省费。
+
+增强 tickets 按需加载交付协议；普通任务不制造 PRD、AC 编号或证据包。共享验收定义只在协议维护，角色和工具机制留在执行层，避免每个子代理加载整套工作流。
 
 ## 与项目约定配合
 

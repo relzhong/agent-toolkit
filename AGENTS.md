@@ -36,7 +36,9 @@ Manual ticket execution records durable completion evidence without a separate g
 
 The final acceptance review verifies the whole specification before closure. Completing implementation tickets alone does not close the spec.
 
-Use `review-loop` when the user requests implementation/review/fix orchestration. Use `review-loop-paseo` when Paseo orchestration is requested.
+Use `review-loop` for requested implementation/review/fix work: the current executor owns the work unit and calls fresh-context reviewers. Ordinary units default to one reviewer; automatic whole-spec acceptance defaults to `parallel-review`. Manual execution leaves parallel review to the user's choice.
+
+Use `review-loop-paseo` only for requested Paseo orchestration. Its thin Lead dispatches issues and tracks completion; Implementation runs the shared loop. Delivery protocols define evidence and acceptance, not these agent roles.
 
 For codebase architecture diagnostics and refactoring opportunities, use `improve-codebase-architecture`. Save its HTML reports under `docs/review/`.
 
