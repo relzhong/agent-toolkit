@@ -18,11 +18,12 @@
 | 记录实现知识并归档计划 | `document-architecture-decision`、`mark-planning-implemented` |
 | 共享验收与证据规则 | `delivery-protocol` |
 
-**5 条根级规则**：作为项目指令的一部分加载。
+**6 条根级规则**：作为项目指令的一部分加载。
 
 | 规则 | 作用 |
 | --- | --- |
 | `implementation-scope` | 保持实现范围，区分已批准要求与新增建议 |
+| `coding-discipline` | 控制防御性堆叠与过度抽象，保持信任边界单次校验、单一事实源和行为测试 |
 | `tool-output` | 控制工具输出量，保留退出码和必要验证证据 |
 | `task-artifacts` | 区分持久化文字记录与临时截图、日志等产物 |
 | `engineering-workflow` | 定义各阶段应使用的技能及完成条件 |
@@ -54,6 +55,7 @@
       "rulesPath": ".rulesync/rules",
       "rules": [
         "implementation-scope",
+        "coding-discipline",
         "tool-output",
         "task-artifacts",
         "engineering-workflow",
@@ -129,7 +131,7 @@ Paseo 的 Implementation 可在当前 issue 内调用 reviewer 和按需技术�
 
 ## 与项目约定配合
 
-项目自己的 `overview.md` 可以继续使用 `root: true`，保存业务约束、技术栈和项目入口。工具箱的五条规则也都使用 `root: true`，正文会与项目规则共同合并到根级指令文件；不需要把共享正文手工复制进 overview。
+项目自己的 `overview.md` 可以继续使用 `root: true`，保存业务约束、技术栈和项目入口。工具箱的六条规则也都使用 `root: true`，正文会与项目规则共同合并到根级指令文件；不需要把共享正文手工复制进 overview。
 
 项目级绑定保留在项目内：
 
